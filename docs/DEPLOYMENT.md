@@ -97,7 +97,8 @@ One always-on free service uses about 744 of the 750 free instance-hours a month
 | `/api/health/ready` shows `database: down` | Atlas Network Access lacks `0.0.0.0/0`, a wrong password in `MONGODB_URI` (URL-encode special characters), or the cluster is paused (resume it in Atlas). |
 | Login works but a reload signs you out | The browser is calling Render directly instead of through Vercel. Use the Vercel URL. Check the rewrite destination in `vercel.json`. |
 | 404 from `/api/...` on Vercel | The rewrite destination URL is wrong. Fix `apps/web/vercel.json` and redeploy. |
-| Vercel build can't find `@lams/shared` | The project Root Directory must be `apps/web`, with "Include source files outside of the Root Directory" enabled (the default). Install runs at the repo root. |
+| Vercel build: `Cannot find module '@lams/shared'` | Each app must list `@lams/shared` in its own `package.json` (fixed in the repo). Vercel installs only the deps `apps/web` declares. Also check the Root Directory is `apps/web` with "Include source files outside of the Root Directory" enabled (the default). |
+| `npm warn install-scripts … esbuild` during install | Harmless. The build works without esbuild's postinstall check. |
 | Render blueprint rejects `autoDeployTrigger` | Older blueprint spec: replace it with `autoDeploy: true`. |
 | Demo accounts missing on the login page | `DEMO_MODE` isn't `true` on Render, or the database hasn't been seeded (step 3). |
 | Account locked after testing | Wait 15 minutes, or re-run the seed workflow (it unlocks demo users). |

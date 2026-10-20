@@ -1,0 +1,86 @@
+{
+  "app": {
+    "short": "LAMS",
+    "name": "National Land Acquisition & Management System",
+    "dept": "Department of Land Resources · Ministry of Rural Development",
+    "synthetic": "Prototype · all data is synthetic",
+    "skip": "Skip to main content"
+  },
+  "nav": {
+    "home": "Home",
+    "users": "Users",
+    "roles": "Roles & permissions",
+    "main": "Main navigation"
+  },
+  "common": {
+    "signOut": "Sign out",
+    "language": "Language",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "requestId": "Request id: {{id}}"
+  },
+  "scope": {
+    "NATIONAL": "National",
+    "STATE": "State",
+    "DISTRICT": "District",
+    "ORGANIZATION": "Organisation"
+  },
+  "server": {
+    "wakingTitle": "Starting the server…",
+    "wakingBody": "The free hosting tier sleeps when idle. The first request can take up to a minute; this page will continue on its own.",
+    "downTitle": "The server is not responding",
+    "downBody": "Please check your connection and try again in a moment."
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Officials sign in with their departmental account.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "demoTitle": "Demo accounts",
+    "demoHint": "Pick a role to sign in instantly. Every demo account uses the password below.",
+    "demoPassword": "Demo password",
+    "demoUnavailable": "Demo accounts are not available right now."
+  },
+  "home": {
+    "welcome": "Welcome, {{name}}",
+    "role": "Role",
+    "jurisdiction": "Jurisdiction",
+    "level": "Access level",
+    "permissions": "What you can do",
+    "permissionsHint": "Granted by your role. Administrators change these under Roles & permissions — no code change needed.",
+    "roadmap": "Coming in the next milestones",
+    "m1": "Proposals and the configurable legal workflow (RFCTLARR 2013, NH Act 1956)",
+    "m2": "Land parcels on an interactive map with drill-down",
+    "m3": "Notifications, awards, compensation and disbursement",
+    "m4": "R&R, possession, milestones and the national dashboard",
+    "m5": "Statutory deadline alerts and escalation"
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Only users inside your jurisdiction are listed. The server enforces this on every query.",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "jurisdiction": "State / District / Organisation",
+    "lastLogin": "Last sign-in",
+    "never": "Never",
+    "total": "{{count}} users"
+  },
+  "roles": {
+    "title": "Roles & permissions",
+    "subtitle": "Roles are configuration. Changes take effect within a minute and are recorded in the audit log.",
+    "scopeLevel": "Scope",
+    "permissionCount": "{{count}} permissions",
+    "unsaved": "Unsaved changes"
+  },
+  "errors": {
+    "generic": "Something went wrong.",
+    "notFound": "Page not found",
+    "back": "Go to home"
+  }
+}

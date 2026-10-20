@@ -1,0 +1,26 @@
+name: Seed demo data
+
+# Run by hand from the Actions tab to (re)seed the Atlas database with synthetic demo data.
+# Needs repository secrets MONGODB_URI and DEMO_USER_PASSWORD.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run seed
+        env:
+          NODE_ENV: development
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          DEMO_USER_PASSWORD: ${{ secrets.DEMO_USER_PASSWORD }}

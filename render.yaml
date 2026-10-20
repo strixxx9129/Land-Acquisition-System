@@ -1,0 +1,32 @@
+# Render Blueprint: New → Blueprint → pick this repo. Creates the free API service.
+# Secrets marked `sync: false` are entered in the Render dashboard, never committed.
+services:
+  - type: web
+    name: lams-api
+    runtime: node
+    plan: free
+    # Closest Render region to India. Keep the Atlas cluster in Mumbai (ap-south-1) or Singapore.
+    region: singapore
+    buildCommand: npm ci --include=dev && npm run build -w apps/api
+    startCommand: node apps/api/dist/index.js
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: DEMO_MODE
+        value: "true"
+      - key: DEMO_USER_PASSWORD
+        sync: false
+      # Browser → Vercel rewrite → Render router → app.
+      - key: TRUST_PROXY
+        value: "2"
+      # Only needed if a browser calls the API directly instead of through the Vercel rewrite.
+      - key: CORS_ORIGINS
+        sync: false

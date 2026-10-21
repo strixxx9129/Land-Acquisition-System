@@ -6,8 +6,8 @@ import express from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
-import swaggerUi from 'swagger-ui-express';
 import { config } from './config.js';
+import { docsRouter } from './docs.js';
 import { logger } from './logger.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { rolesRouter } from './modules/admin/roles.routes.js';
@@ -16,7 +16,6 @@ import { authRouter } from './modules/auth/auth.routes.js';
 import { healthRouter } from './modules/health/health.routes.js';
 import { mastersRouter } from './modules/masters/masters.routes.js';
 import { usersRouter } from './modules/users/users.routes.js';
-import { openApiDocument } from './openapi.js';
 
 export function createApp() {
   const app = express();
@@ -60,8 +59,7 @@ export function createApp() {
     }),
   );
 
-  app.get('/api/openapi.json', (_req, res) => res.json(openApiDocument()));
-  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(undefined, { swaggerOptions: { url: '/api/openapi.json' }, customSiteTitle: 'LAMS API' }));
+  app.use('/api', docsRouter);
 
   app.use('/api/auth', authRouter);
   app.use('/api/admin/roles', requireAuth, rolesRouter);

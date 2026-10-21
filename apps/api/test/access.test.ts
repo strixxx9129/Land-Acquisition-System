@@ -94,6 +94,16 @@ describe('platform', () => {
     expect(res.body.error.requestId).toBeTypeOf('string');
   });
 
+  it('serves the docs page with or without a trailing slash (the Vercel rewrite strips it)', async () => {
+    for (const path of ['/api/docs', '/api/docs/']) {
+      const res = await request(app).get(path);
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('/api/docs/assets/swagger-ui-bundle.js');
+    }
+    expect((await request(app).get('/api/docs/init.js')).status).toBe(200);
+    expect((await request(app).get('/api/docs/assets/swagger-ui.css')).status).toBe(200);
+  });
+
   it('serves the OpenAPI document', async () => {
     const res = await request(app).get('/api/openapi.json');
     expect(res.status).toBe(200);

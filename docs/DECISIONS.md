@@ -31,6 +31,21 @@ Pinned to the latest release of major versions the team knows well (TypeScript 5
 ## D9. Synthetic master data
 State codes follow LGD/Census numbering (27 Maharashtra, 09 Uttar Pradesh, 21 Odisha). District codes are **synthetic placeholders** and flagged `syntheticCode: true` in the data. The LGD integration adapter (requirement 11) is the path to real codes.
 
+## D10. Workflow definitions as versioned data
+A workflow is one JSON document (`packages/shared/src/workflow.ts` defines its schema) holding stages, transitions, inputs, SLAs, required documents and statutory deadlines. Zod validates the shape. `checkWorkflowConsistency` checks what Zod can't: references resolve, roles exist, every stage is reachable, no dead ends, a COMPLETED outcome exists, and effective-date inputs are required dates. Versions are immutable once active; cases pin their version. We chose this over a BPMN engine (Camunda, Temporal) because those need extra infrastructure that doesn't fit the free tier. The schema maps cleanly onto BPMN if a real engine is adopted later.
+
+## D11. One engine for live actions and seed data
+Demo cases are produced by calling `createCase` / `transitionCase` with backdated timestamps and the acting officer, not by inserting finished documents. Seeded data therefore obeys the same rules as live data, and a broken workflow definition breaks the seed loudly (this caught two role-permission gaps during development).
+
+## D12. Statutory deadlines computed on read
+Deadline status depends on "now", so it is computed from `stageDates` (the official dates recorded by transitions such as the gazette date) every time a case is read, rather than stored and allowed to go stale. M5's alert scanner runs the same function (`evaluateDeadlines`) on a schedule. Months are calendar months, clamped at month end.
+
+## D13. Optimistic locking plus transactions
+Every case carries a `version`. A transition requires `expectedVersion` and re-checks it inside the transaction (`findOneAndUpdate({ _id, version, currentStage })`). This gives a clear `409 STALE_VERSION` when someone else acted first, rather than silently applying an action to a case the user wasn't looking at. A unique `(caseId, seq)` index on history makes a forked history impossible even if code elsewhere misbehaves.
+
+## D14. Tamper evidence by hash chain
+History events are append-only at the application level (update/delete hooks throw) and chained by SHA-256. This makes tampering *detectable*, not impossible: someone with direct database access can still edit records, but the integrity check exposes it. *Production:* also anchor the latest hash periodically to an external store (e.g. a signed daily digest, or a write-once object storage bucket) so the whole chain can't be rewritten consistently.
+
 ## Simplifications (hackathon → production)
 
 | Simplification | Production alternative |
@@ -42,3 +57,6 @@ State codes follow LGD/Census numbering (27 Maharashtra, 09 Uttar Pradesh, 21 Od
 | HS256 shared secret | RS256/EdDSA with a KMS/HSM-held key and key rotation |
 | Demo password shown on the login page | Demo mode off; real onboarding with verified government emails |
 | Logs to stdout | Central logging + SIEM (CERT-In 180-day log retention) |
+| Workflow edited as JSON in the browser | Visual BPMN-style designer with a maker-checker approval before activation |
+| Statutory limits typed in from our reading of the Acts | Vetted by the Legal cell of DoLR / state revenue departments; per-state rules as separate workflow versions |
+| Stage documents listed but not yet enforced | Enforced once the document repository (M3) exists |

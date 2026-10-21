@@ -1,14 +1,23 @@
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { PERMISSIONS } from '@lams/shared';
+import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import type { CaseSummary } from '../lib/types';
 import { useText } from '../lib/useText';
 
-const ROADMAP = ['m1', 'm2', 'm3', 'm4', 'm5'] as const;
+const ROADMAP = ['m2', 'm3', 'm4', 'm5'] as const;
 
 export function HomePage() {
   const { t } = useTranslation();
   const text = useText();
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  const inbox = useQuery({
+    queryKey: ['cases', 'inbox'],
+    queryFn: () => api<{ items: CaseSummary[] }>('/cases/inbox'),
+    enabled: can('case.transition'),
+  });
   if (!user) return null;
   const granted = PERMISSIONS.filter((p) => user.permissions.includes(p.code));
 
@@ -29,6 +38,24 @@ export function HomePage() {
         ))}
       </dl>
 
+      {(can('case.transition') || can('case.read')) && (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-lg border-2 border-brand-600 bg-surface p-5">
+          <p className="text-lg font-semibold">
+            {inbox.data ? (inbox.data.items.length ? t('home.inboxCount', { count: inbox.data.items.length }) : t('home.inboxEmpty')) : can('case.transition') ? t('common.loading') : ''}
+          </p>
+          <div className="flex gap-2">
+            {can('case.transition') && (
+              <Link to="/inbox" className="rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">
+                {t('home.openInbox')}
+              </Link>
+            )}
+            <Link to="/cases" className="rounded-md border border-brand-600 px-4 py-2 text-sm font-semibold text-brand-700">
+              {t('home.browseCases')}
+            </Link>
+          </div>
+        </section>
+      )}
+
       <section aria-labelledby="perms" className="rounded-lg border border-line bg-surface p-5">
         <h2 id="perms" className="font-semibold">
           {t('home.permissions')}
@@ -47,7 +74,7 @@ export function HomePage() {
         <h2 id="roadmap" className="font-semibold">
           {t('home.roadmap')}
         </h2>
-        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-ink-muted">
+        <ol className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink-muted">
           {ROADMAP.map((k) => (
             <li key={k}>{t(`home.${k}`)}</li>
           ))}

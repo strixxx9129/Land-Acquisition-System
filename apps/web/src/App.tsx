@@ -8,10 +8,16 @@ import { Loading } from './components/ErrorNotice';
 import { ServerBanner } from './components/ServerBanner';
 import { ApiError } from './lib/api';
 import { AuthProvider, useAuth } from './lib/auth';
+import { CaseDetailPage } from './pages/CaseDetailPage';
+import { CasesPage } from './pages/CasesPage';
 import { HomePage } from './pages/HomePage';
+import { InboxPage } from './pages/InboxPage';
 import { LoginPage } from './pages/LoginPage';
+import { NewProposalPage } from './pages/NewProposalPage';
 import { RolesPage } from './pages/RolesPage';
 import { UsersPage } from './pages/UsersPage';
+import { WorkflowsPage } from './pages/WorkflowsPage';
+import { WorkflowVersionPage } from './pages/WorkflowVersionPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,6 +82,12 @@ export function App() {
                   </RequireAuth>
                 }
               />
+              <Route path="inbox" element={<RequireAuth permission="case.read"><InboxPage /></RequireAuth>} />
+              <Route path="cases" element={<RequireAuth permission="case.read"><CasesPage /></RequireAuth>} />
+              <Route path="cases/new" element={<RequireAuth permission="case.create"><NewProposalPage /></RequireAuth>} />
+              <Route path="cases/:id" element={<RequireAuth permission="case.read"><CaseDetailPage /></RequireAuth>} />
+              <Route path="admin/workflows" element={<RequireAuth permission="workflow.config.manage"><WorkflowsPage /></RequireAuth>} />
+              <Route path="admin/workflows/:code/:version" element={<RequireAuth permission="workflow.config.manage"><WorkflowVersionPage /></RequireAuth>} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

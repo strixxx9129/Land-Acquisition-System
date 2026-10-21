@@ -13,8 +13,12 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/', label: 'nav.home' },
+  { to: '/inbox', label: 'nav.inbox', permission: 'case.transition' },
+  { to: '/cases', label: 'nav.cases', permission: 'case.read' },
+  { to: '/cases/new', label: 'nav.newProposal', permission: 'case.create' },
   { to: '/users', label: 'nav.users', permission: 'admin.users.read' },
   { to: '/admin/roles', label: 'nav.roles', permission: 'admin.roles.manage' },
+  { to: '/admin/workflows', label: 'nav.workflows', permission: 'workflow.config.manage' },
 ];
 
 export function AppShell() {
@@ -59,7 +63,7 @@ export function AppShell() {
               <li key={item.to}>
                 <NavLink
                   to={item.to}
-                  end={item.to === '/'}
+                  end={item.to === '/' || item.to === '/cases'}
                   className={({ isActive }) =>
                     `block whitespace-nowrap border-b-3 px-3 py-2.5 text-sm ${isActive ? 'border-accent-400 font-semibold text-white' : 'border-transparent text-brand-100 hover:text-white'}`
                   }

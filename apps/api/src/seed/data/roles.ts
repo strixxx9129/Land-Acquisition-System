@@ -63,7 +63,7 @@ export const roleSeeds: RoleSeed[] = [
     name: { en: 'R&R Officer', hi: 'पुनर्वास एवं पुनर्स्थापन अधिकारी' },
     description: { en: 'Registers affected families and delivers entitlements', hi: 'प्रभावित परिवारों का पंजीकरण और पात्रताओं का वितरण' },
     scopeLevel: 'DISTRICT',
-    permissions: [...VIEW, 'rr.manage', 'document.upload', 'dashboard.read'],
+    permissions: [...VIEW, 'case.transition', 'rr.manage', 'document.upload', 'dashboard.read'],
   },
   {
     code: 'FIELD_OFFICER',
@@ -77,7 +77,7 @@ export const roleSeeds: RoleSeed[] = [
     name: { en: 'Disbursement Officer', hi: 'भुगतान अधिकारी' },
     description: { en: 'Releases compensation to beneficiaries', hi: 'लाभार्थियों को मुआवज़ा जारी करते हैं' },
     scopeLevel: 'DISTRICT',
-    permissions: [...VIEW, 'payment.manage', 'pii.reveal', 'document.upload', 'dashboard.read'],
+    permissions: [...VIEW, 'case.transition', 'payment.manage', 'pii.reveal', 'document.upload', 'dashboard.read'],
   },
   {
     code: 'REQUIRING_BODY',

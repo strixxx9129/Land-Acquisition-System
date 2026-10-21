@@ -108,5 +108,7 @@ describe('platform', () => {
     const res = await request(app).get('/api/openapi.json');
     expect(res.status).toBe(200);
     expect(res.body.paths).toHaveProperty('/api/auth/login');
+    expect(res.body.paths).toHaveProperty('/api/cases/{id}/transitions');
+    expect(res.body.paths).toHaveProperty('/api/workflows/{code}/versions/{version}/activate');
   });
 });

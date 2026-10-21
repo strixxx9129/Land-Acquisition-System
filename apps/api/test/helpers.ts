@@ -16,5 +16,7 @@ export function asUser(token: string) {
   return {
     get: (url: string) => request(app).get(url).set('Authorization', `Bearer ${token}`),
     patch: (url: string, body: object) => request(app).patch(url).set('Authorization', `Bearer ${token}`).send(body),
+    post: (url: string, body: object = {}) => request(app).post(url).set('Authorization', `Bearer ${token}`).send(body),
+    put: (url: string, body: object) => request(app).put(url).set('Authorization', `Bearer ${token}`).send(body),
   };
 }

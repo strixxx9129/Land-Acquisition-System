@@ -44,7 +44,12 @@ Either:
 - **GitHub Actions (recommended):** repo → *Settings → Secrets and variables → Actions* → add `MONGODB_URI` and `DEMO_USER_PASSWORD` (same values as Render). Then *Actions → Seed demo data → Run workflow*.
 - **Locally:** create `apps/api/.env` with `MONGODB_URI=…` and `DEMO_USER_PASSWORD=…`, then run `npm run seed`.
 
-Seeding is idempotent. Re-running it restores roles, masters and demo users (and signs demo users out).
+Seeding is idempotent. Re-running it:
+- restores roles, masters and demo users (and signs demo users out);
+- creates or upgrades the RFCTLARR and NH Act workflows, but only if the seed file differs from the active version, so admin edits otherwise survive;
+- rebuilds the 8 synthetic demo cases with dates relative to today. Cases created by users are kept.
+
+**Re-run the seed after deploying a new milestone** (e.g. after M1 the database needs the workflows and demo cases). Re-running it before judging also refreshes the demo dates, so deadlines look current.
 
 ## 4. Vercel (web)
 

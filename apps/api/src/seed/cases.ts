@@ -5,6 +5,9 @@ import { getRole } from '../modules/access/roles.service.js';
 import { Case } from '../modules/cases/case.model.js';
 import { CaseEvent } from '../modules/cases/caseEvent.model.js';
 import { createCase, transitionCase, type ActingUser } from '../modules/cases/engine.js';
+import { hash32 } from '../modules/integrations/mock/synthetic.js';
+import { Parcel } from '../modules/parcels/parcel.model.js';
+import { importParcels } from '../modules/parcels/parcels.service.js';
 import { User } from '../modules/users/user.model.js';
 import { getWorkflow } from '../modules/workflow/workflow.service.js';
 import { caseSeeds, type CaseSeed } from './data/cases.js';
@@ -56,7 +59,18 @@ async function removeSeededCases() {
   const ids = (await Case.find({ seedKey: { $exists: true } }).select('_id').lean()).map((c) => c._id as Types.ObjectId);
   if (!ids.length) return;
   await CaseEvent.collection.deleteMany({ caseId: { $in: ids } });
+  await Parcel.collection.deleteMany({ caseId: { $in: ids } });
   await Case.collection.deleteMany({ _id: { $in: ids } });
+}
+
+/** Survey numbers 41, 42, … per village: the mock cadastral layout centres that range on the village. */
+const surveyRange = (count: number) => Array.from({ length: count }, (_, i) => String(41 + i));
+
+/** About 1 in 25 parcels of a notified case is in dispute, so the map and later the alerts show some. */
+async function markSomeDisputed(caseId: Types.ObjectId) {
+  const parcels = await Parcel.find({ caseId, status: { $nin: ['PROPOSED'] } }).select('_id surveyNumber villageName').lean();
+  const chosen = parcels.filter((p) => hash32(`dispute|${p.villageName}|${p.surveyNumber}`) % 25 === 0).map((p) => p._id);
+  if (chosen.length) await Parcel.updateMany({ _id: { $in: chosen } }, { $set: { status: 'DISPUTED' } });
 }
 
 /**
@@ -67,7 +81,7 @@ export async function seedCases(now = new Date()): Promise<void> {
   await removeSeededCases();
   const users = new Map<string, ActingUser>();
   for (const seed of caseSeeds) {
-    const { key, steps, createdBy, createdDaysAgo, ...input } = seed;
+    const { key, steps, createdBy, createdDaysAgo, parcels, ...input } = seed;
     const creator = await actingUser(createdBy, users);
     const created = await createCase({ ...input, villages: input.villages, urgency: input.urgency ?? false }, creator, daysAgo(createdDaysAgo, now));
     await Case.updateOne({ _id: created._id }, { $set: { seedKey: key } });
@@ -75,7 +89,20 @@ export async function seedCases(now = new Date()): Promise<void> {
     let version = created.version;
     const wf = (await getWorkflow(created.workflowCode, created.workflowVersion)).content;
     let stage = created.currentStage;
+    // The parcel import happens at its point in the timeline, so later transitions move the parcels on.
+    const importBefore = parcels ? steps.findIndex((s) => s.daysAgo < parcels.daysAgo) : -1;
+    const runImport = async () => {
+      if (!parcels) return;
+      const by = await actingUser(parcels.by, users);
+      for (const village of input.villages) {
+        await importParcels(String(created._id), { village, surveyNumbers: surveyRange(parcels.perVillage) }, by, daysAgo(parcels.daysAgo, now));
+      }
+      version = (await Case.findById(created._id).select('version').lean())!.version;
+    };
+    if (parcels && importBefore === -1 && steps.length === 0) await runImport();
+
     for (const [i, step] of steps.entries()) {
+      if (i === importBefore) await runImport();
       const t = wf.transitions.find((x) => x.action === step.action && x.from.includes(stage));
       if (!t) throw new Error(`seed ${key}: no ${step.action} from ${stage}`);
       const at = daysAgo(step.daysAgo, now);
@@ -96,6 +123,8 @@ export async function seedCases(now = new Date()): Promise<void> {
       version = updated.version;
       stage = updated.currentStage;
     }
+    if (parcels && importBefore === -1 && steps.length > 0) await runImport();
+    await markSomeDisputed(created._id as Types.ObjectId);
   }
   logger.info({ cases: caseSeeds.length }, 'demo cases seeded');
 }

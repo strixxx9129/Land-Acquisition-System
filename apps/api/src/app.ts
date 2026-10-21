@@ -18,6 +18,8 @@ import { mastersRouter } from './modules/masters/masters.routes.js';
 import { usersRouter } from './modules/users/users.routes.js';
 import { casesRouter } from './modules/cases/cases.routes.js';
 import { workflowRouter } from './modules/workflow/workflow.routes.js';
+import { caseParcelsRouter, gisRouter, parcelsRouter } from './modules/gis/gis.routes.js';
+import { settingsRouter } from './modules/settings/settings.routes.js';
 
 export function createApp() {
   const app = express();
@@ -73,7 +75,11 @@ export function createApp() {
   app.use('/api/users', requireAuth, usersRouter);
   app.use('/api/masters', requireAuth, mastersRouter);
   app.use('/api/workflows', requireAuth, workflowRouter);
+  app.use('/api/cases/:caseId/parcels', requireAuth, caseParcelsRouter);
   app.use('/api/cases', requireAuth, casesRouter);
+  app.use('/api/parcels', requireAuth, parcelsRouter);
+  app.use('/api/gis', requireAuth, gisRouter);
+  app.use('/api/settings', requireAuth, settingsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -16,6 +16,11 @@
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
     "@lams/shared": "*",
+    "@turf/area": "^7.4.0",
+    "@turf/bbox": "^7.4.0",
+    "@turf/centroid": "^7.4.0",
+    "@turf/helpers": "^7.4.0",
+    "@turf/kinks": "^7.4.0",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",

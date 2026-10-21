@@ -16,6 +16,7 @@ import { Organization } from '../masters/organization.model.js';
 import { getActiveWorkflow, getWorkflow } from '../workflow/workflow.service.js';
 import { Case } from './case.model.js';
 import { CaseEvent, eventHash } from './caseEvent.model.js';
+import { syncParcelStatuses } from '../parcels/statusSync.js';
 import { nextSequence } from './counter.model.js';
 
 /** Who is acting, as recorded in history. Seeds pass real (synthetic) officers here too. */
@@ -198,6 +199,8 @@ export async function transitionCase(caseId: string, req: TransitionRequest, by:
     );
     if (!updated) throw new AppError(409, 'STALE_VERSION', 'This case was updated by someone else. Reload to see the latest state.');
     await CaseEvent.create([event], { session });
+    // Parcels follow the case (e.g. a declaration marks every proposed/notified parcel as declared).
+    await syncParcelStatuses(c._id, target, session);
     return updated;
   });
 }
@@ -222,6 +225,26 @@ export async function updateProposal(caseId: string, changes: UpdateProposal, by
       { new: true, session },
     );
     if (!updated) throw new AppError(409, 'STALE_VERSION', 'This case was updated by someone else.');
+    await CaseEvent.create([event], { session });
+    return updated;
+  });
+}
+
+/**
+ * Appends a non-transition event (e.g. parcels imported) to a case's history. It bumps the case
+ * version like any change, so concurrent editors see they need to reload.
+ */
+export async function recordCaseEvent(caseId: string, by: ActingUser, action: string, inputs: Record<string, unknown>, at = new Date()) {
+  return inTransaction(async (session) => {
+    const c = await Case.findById(caseId).session(session);
+    if (!c) throw notFound('Case not found');
+    const event = buildEvent(c, by, at, { action, inputs });
+    const updated = await Case.findOneAndUpdate(
+      { _id: c._id, version: c.version },
+      { $set: { lastActionAt: at, lastEventHash: event.hash }, $inc: { version: 1, eventCount: 1 } },
+      { new: true, session },
+    );
+    if (!updated) throw new AppError(409, 'STALE_VERSION', 'This case was updated by someone else. Please retry.');
     await CaseEvent.create([event], { session });
     return updated;
   });

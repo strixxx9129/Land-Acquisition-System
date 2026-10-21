@@ -6,6 +6,8 @@ import {
   createCaseSchema,
   demoAccountSchema,
   healthSchema,
+  importParcelsSchema,
+  parcelStatusSchema,
   loginRequestSchema,
   loginResponseSchema,
   permissionCodeSchema,
@@ -234,6 +236,73 @@ registry.registerPath({
   summary: 'Activate a draft. New cases use it; existing cases keep the version they started on.',
   request: { params: workflowKey },
   responses: { 200: { description: 'Activated' }, 409: error('Not a draft') },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/gis/summary',
+  tags: ['GIS'],
+  security: secured,
+  summary: 'Drill-down aggregates: states (national), districts (state) or projects (district), with centroid, bbox and status counts',
+  request: { query: z.object({ level: z.enum(['national', 'state', 'district']).optional(), code: z.string().optional() }) },
+  responses: { 200: { description: 'OK' }, 403: error('Missing parcel.read') },
+});
+registry.registerPath({
+  method: 'get',
+  path: '/api/gis/parcels',
+  tags: ['GIS'],
+  security: secured,
+  summary: 'Parcels intersecting the visible map area as GeoJSON (capped by the gis.parcelLoadLimit setting)',
+  request: {
+    query: z.object({
+      bbox: z.string().describe('minLng,minLat,maxLng,maxLat'),
+      caseId: z.string().optional(),
+      status: parcelStatusSchema.optional(),
+      mismatch: z.enum(['true', 'false']).optional().describe('Only parcels whose map area differs from the record beyond the tolerance'),
+    }),
+  },
+  responses: { 200: { description: 'GeoJSON FeatureCollection with `truncated` and `limit`' }, 400: error('Malformed bbox') },
+});
+registry.registerPath({
+  method: 'get',
+  path: '/api/parcels/{id}',
+  tags: ['GIS'],
+  security: secured,
+  summary: 'Parcel detail: owners, recorded vs measured area, source record, geometry',
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 200: { description: 'OK' }, 404: error('Not found or outside jurisdiction') },
+});
+registry.registerPath({
+  method: 'get',
+  path: '/api/cases/{id}/parcels',
+  tags: ['GIS'],
+  security: secured,
+  summary: 'All parcels of a case with totals, mismatch count and bounding box',
+  request: { params: caseId },
+  responses: { 200: { description: 'OK' } },
+});
+registry.registerPath({
+  method: 'post',
+  path: '/api/cases/{id}/parcels/import',
+  tags: ['GIS', 'Integrations'],
+  security: secured,
+  summary: 'Fetch survey numbers from the land-records and cadastral adapters and add them as parcels (partial success reported per survey number)',
+  request: { params: caseId, body: { content: { 'application/json': { schema: importParcelsSchema } } } },
+  responses: {
+    201: json(z.object({ created: z.number(), mismatches: z.number(), skipped: z.array(z.string()), failed: z.array(z.object({ surveyNumber: z.string(), reason: z.string() })) })),
+    400: error('Village not in the case district'),
+    502: error('Land records service unavailable'),
+  },
+});
+registry.registerPath({ method: 'get', path: '/api/settings', tags: ['Admin'], security: secured, summary: 'Operational thresholds (e.g. area-mismatch tolerance)', responses: { 200: { description: 'OK' } } });
+registry.registerPath({
+  method: 'put',
+  path: '/api/settings/{key}',
+  tags: ['Admin'],
+  security: secured,
+  summary: 'Change a setting (validated per key, audited)',
+  request: { params: z.object({ key: z.string() }), body: { content: { 'application/json': { schema: z.object({ value: z.number() }) } } } },
+  responses: { 200: { description: 'Updated' }, 400: error('Invalid value or unknown key') },
 });
 
 let cached: unknown;

@@ -47,7 +47,8 @@ Either:
 Seeding is idempotent. Re-running it:
 - restores roles, masters and demo users (and signs demo users out);
 - creates or upgrades the RFCTLARR and NH Act workflows, but only if the seed file differs from the active version, so admin edits otherwise survive;
-- rebuilds the 8 synthetic demo cases with dates relative to today. Cases created by users are kept.
+- rebuilds the 8 synthetic demo cases (with about 290 parcels) with dates relative to today. Cases created by users are kept;
+- adds villages and default settings. Settings an admin has changed are left alone.
 
 **Re-run the seed after deploying a new milestone** (e.g. after M1 the database needs the workflows and demo cases). Re-running it before judging also refreshes the demo dates, so deadlines look current.
 

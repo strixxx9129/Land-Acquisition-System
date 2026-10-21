@@ -27,6 +27,8 @@ export interface CaseSeed {
   urgency?: boolean;
   createdBy: string;
   createdDaysAgo: number;
+  /** Parcels pulled from the (mock) land records for each of the case's villages, by an officer, at a point in the history. */
+  parcels?: { by: string; daysAgo: number; perVillage: number };
   steps: CaseStepSeed[];
 }
 
@@ -55,6 +57,7 @@ export const caseSeeds: CaseSeed[] = [
     villages: ['Maan', 'Marunji', 'Nere', 'Jambe'],
     createdBy: NHAI,
     createdDaysAgo: 150,
+    parcels: { by: LAO_PUNE, daysAgo: 145, perVillage: 12 },
     // 3A published 16 days ago: the 21-day objection window closes in 5 days.
     steps: [
       { action: 'SUBMIT', by: NHAI, daysAgo: 148 },
@@ -77,6 +80,7 @@ export const caseSeeds: CaseSeed[] = [
     villages: ['Vasuli', 'Shinde', 'Varale'],
     createdBy: 'officer.midc@staff.lams.test',
     createdDaysAgo: 40,
+    parcels: { by: LAO_PUNE, daysAgo: 20, perVillage: 15 },
     // In scrutiny for 22 days against a 15-day SLA.
     steps: [{ action: 'SUBMIT', by: 'officer.midc@staff.lams.test', daysAgo: 22 }],
   },
@@ -95,6 +99,7 @@ export const caseSeeds: CaseSeed[] = [
     villages: ['Rajgurunagar', 'Chas', 'Kanhersar', 'Waki'],
     createdBy: 'officer.rvnl@staff.lams.test',
     createdDaysAgo: 700,
+    parcels: { by: LAO_PUNE, daysAgo: 672, perVillage: 12 },
     // Preliminary notification 340 days ago: the 12-month declaration limit is close.
     steps: [
       { action: 'SUBMIT', by: 'officer.rvnl@staff.lams.test', daysAgo: 690 },
@@ -124,6 +129,7 @@ export const caseSeeds: CaseSeed[] = [
     villages: ['Shinde', 'Palse', 'Musalgaon'],
     createdBy: NHAI,
     createdDaysAgo: 400,
+    parcels: { by: 'lao.nashik@staff.lams.test', daysAgo: 390, perVillage: 12 },
     steps: [
       { action: 'SUBMIT', by: NHAI, daysAgo: 395 },
       { action: 'FORWARD_FOR_3A', by: 'lao.nashik@staff.lams.test', daysAgo: 386 },
@@ -147,6 +153,7 @@ export const caseSeeds: CaseSeed[] = [
     villages: ['Bhita', 'Ghoorpur', 'Iradatganj'],
     createdBy: 'officer.upiwrd@staff.lams.test',
     createdDaysAgo: 260,
+    parcels: { by: 'lao.prayagraj@staff.lams.test', daysAgo: 250, perVillage: 10 },
     // SIA running for 200 days against a 6-month limit.
     steps: [
       { action: 'SUBMIT', by: 'officer.upiwrd@staff.lams.test', daysAgo: 255 },
@@ -171,6 +178,7 @@ export const caseSeeds: CaseSeed[] = [
     urgency: true,
     createdBy: 'officer.idco@staff.lams.test',
     createdDaysAgo: 820,
+    parcels: { by: 'lao.khordha@staff.lams.test', daysAgo: 810, perVillage: 14 },
     // Award 130 days ago: compensation is overdue under section 38.
     steps: [
       { action: 'SUBMIT', by: 'officer.idco@staff.lams.test', daysAgo: 815 },
@@ -216,6 +224,7 @@ export const caseSeeds: CaseSeed[] = [
     villages: ['Rohta', 'Kakua', 'Iradatnagar'],
     createdBy: NHAI,
     createdDaysAgo: 980,
+    parcels: { by: 'lao.agra@staff.lams.test', daysAgo: 970, perVillage: 14 },
     steps: [
       { action: 'SUBMIT', by: NHAI, daysAgo: 975 },
       { action: 'FORWARD_FOR_3A', by: 'lao.agra@staff.lams.test', daysAgo: 962 },

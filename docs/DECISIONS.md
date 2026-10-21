@@ -46,6 +46,16 @@ Every case carries a `version`. A transition requires `expectedVersion` and re-c
 ## D14. Tamper evidence by hash chain
 History events are append-only at the application level (update/delete hooks throw) and chained by SHA-256. This makes tampering *detectable*, not impossible: someone with direct database access can still edit records, but the integrity check exposes it. *Production:* also anchor the latest hash periodically to an external store (e.g. a signed daily digest, or a write-once object storage bucket) so the whole chain can't be rewritten consistently.
 
+## D15. Map data by viewport, aggregates above district level
+Sending every parcel to the browser doesn't scale, and it would eat the 5 GB/month Render bandwidth. Above district level the map shows aggregate bubbles (one small JSON per level). Below it, polygons come only for the visible bbox via `$geoIntersects`, capped by the `gis.parcelLoadLimit` setting, with a `truncated` flag. Coordinates are rounded to 6 decimals (~0.1 m) on save.
+*At national scale:* vector tiles (e.g. Martin / pg_tileserv, or MongoDB → GeoJSON → tippecanoe → PMTiles) served from object storage and a CDN.
+
+## D16. Integrations behind adapters with deterministic mocks
+`LandRecordsAdapter` and `CadastralAdapter` are the only contract the rest of the system sees. The mocks derive everything from a hash of state, district, village and survey number, so seeds, live imports and tests agree, and both mocks describe the same "true" parcel, which makes the area check meaningful. About 8% of synthetic records carry a deliberate 10–25% area discrepancy. Real adapters (state Bhulekh APIs, Bhunaksha WMS/WFS) plug in at `modules/integrations/index.ts`, chosen per state by configuration.
+
+## D17. Settings registry
+Operational thresholds (area tolerance, map load cap, and later alert thresholds) are defined in code with a Zod validator and a fallback, but their *values* live in the `settings` collection, seeded once and then editable by admins (audited). The code knows what a setting means; the data decides its value.
+
 ## Simplifications (hackathon → production)
 
 | Simplification | Production alternative |
@@ -60,3 +70,6 @@ History events are append-only at the application level (update/delete hooks thr
 | Workflow edited as JSON in the browser | Visual BPMN-style designer with a maker-checker approval before activation |
 | Statutory limits typed in from our reading of the Acts | Vetted by the Legal cell of DoLR / state revenue departments; per-state rules as separate workflow versions |
 | Stage documents listed but not yet enforced | Enforced once the document repository (M3) exists |
+| OpenStreetMap public tiles | Self-hosted tiles or Bhuvan (ISRO) / NIC base maps, with satellite imagery from Bhuvan |
+| Synthetic parcel polygons laid out on a grid near real villages | Bhunaksha cadastral geometry via WFS, with topology checks (overlaps, gaps) |
+| District and village codes synthetic (flagged) | LGD adapter syncing official codes |

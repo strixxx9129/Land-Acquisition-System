@@ -16,9 +16,11 @@ const NAV: NavItem[] = [
   { to: '/inbox', label: 'nav.inbox', permission: 'case.transition' },
   { to: '/cases', label: 'nav.cases', permission: 'case.read' },
   { to: '/cases/new', label: 'nav.newProposal', permission: 'case.create' },
+  { to: '/map', label: 'nav.map', permission: 'parcel.read' },
   { to: '/users', label: 'nav.users', permission: 'admin.users.read' },
   { to: '/admin/roles', label: 'nav.roles', permission: 'admin.roles.manage' },
   { to: '/admin/workflows', label: 'nav.workflows', permission: 'workflow.config.manage' },
+  { to: '/admin/settings', label: 'nav.settings', permission: 'workflow.config.manage' },
 ];
 
 export function AppShell() {

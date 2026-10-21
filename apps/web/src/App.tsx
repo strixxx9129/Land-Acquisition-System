@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
@@ -8,11 +8,15 @@ import { Loading } from './components/ErrorNotice';
 import { ServerBanner } from './components/ServerBanner';
 import { ApiError } from './lib/api';
 import { AuthProvider, useAuth } from './lib/auth';
-import { CaseDetailPage } from './pages/CaseDetailPage';
 import { CasesPage } from './pages/CasesPage';
 import { HomePage } from './pages/HomePage';
 import { InboxPage } from './pages/InboxPage';
 import { LoginPage } from './pages/LoginPage';
+import { SettingsPage } from './pages/SettingsPage';
+
+// Leaflet-heavy pages load on demand, keeping the sign-in page light on slow connections.
+const MapPage = lazy(() => import('./pages/MapPage').then((m) => ({ default: m.MapPage })));
+const CaseDetailPage = lazy(() => import('./pages/CaseDetailPage').then((m) => ({ default: m.CaseDetailPage })));
 import { NewProposalPage } from './pages/NewProposalPage';
 import { RolesPage } from './pages/RolesPage';
 import { UsersPage } from './pages/UsersPage';
@@ -35,7 +39,7 @@ function RequireAuth({ children, permission }: { children: ReactNode; permission
   if (loading) return <Loading />;
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   if (permission && !can(permission)) return <Navigate to="/" replace />;
-  return <>{children}</>;
+  return <Suspense fallback={<Loading />}>{children}</Suspense>;
 }
 
 function NotFound() {
@@ -86,6 +90,8 @@ export function App() {
               <Route path="cases" element={<RequireAuth permission="case.read"><CasesPage /></RequireAuth>} />
               <Route path="cases/new" element={<RequireAuth permission="case.create"><NewProposalPage /></RequireAuth>} />
               <Route path="cases/:id" element={<RequireAuth permission="case.read"><CaseDetailPage /></RequireAuth>} />
+              <Route path="map" element={<RequireAuth permission="parcel.read"><MapPage /></RequireAuth>} />
+              <Route path="admin/settings" element={<RequireAuth permission="workflow.config.manage"><SettingsPage /></RequireAuth>} />
               <Route path="admin/workflows" element={<RequireAuth permission="workflow.config.manage"><WorkflowsPage /></RequireAuth>} />
               <Route path="admin/workflows/:code/:version" element={<RequireAuth permission="workflow.config.manage"><WorkflowVersionPage /></RequireAuth>} />
               <Route path="*" element={<NotFound />} />

@@ -12,8 +12,8 @@ One web platform for the whole land acquisition lifecycle, from project proposal
 |---|---|---|
 | **M0** | Monorepo, auth, roles & jurisdiction scoping, health, cold-start handling, deploy config | ✅ Done |
 | **M1** | Configurable legal workflow engine, proposals, officer inbox, statutory deadlines, tamper-evident history | ✅ Done |
-| M2 | Parcels & GIS map with drill-down, area validation | Next |
-| M3 | Documents (Supabase), notifications, awards, compensation engine, disbursement | |
+| **M2** | Parcels & GIS map with drill-down, viewport loading, area validation, land-records/cadastral adapters | ✅ Done |
+| M3 | Documents (Supabase), notifications, awards, compensation engine, disbursement | Next |
 | M4 | R&R, possession, milestones, national dashboard | |
 | M5 | Alerts, escalation, scheduled scans | |
 | M6 | Field-officer PWA (GPS, photo, offline) | |
@@ -75,6 +75,14 @@ The browser only ever talks to the Vercel origin. Vercel rewrites `/api/*` to Re
 
 The seeded demo cases (Pune Ring Road, Chakan MIDC, Pune–Nashik rail, Nashik–Sinnar NH, Prayagraj canal, Khordha industrial park, Agra ring road, plus a draft for a live demo) are created by **replaying their history through the real engine** with backdated timestamps. Several are deliberately near or past statutory limits.
 
+### Parcels and GIS (implemented in M2)
+
+- **Parcels** carry GeoJSON geometry (in a `2dsphere` index), survey number, ULPIN, land type, owners with shares, recorded area and status. They are jurisdiction-scoped like cases.
+- **Drill-down map** (Leaflet + OpenStreetMap): India → state → district → project → parcel. Above district level the map shows aggregate bubbles from `/api/gis/summary`. Parcel polygons are fetched **only for the visible area**, only once zoomed in, and capped (`/api/gis/parcels?bbox=…`). Each pan cancels the previous request. Users start at their own jurisdiction. Parcel details open in a side panel rather than a popup, so it works with keyboards and on phones, and each case page lists its parcels in a table as a non-map alternative.
+- **Area validation:** the measured (geodesic) area of each polygon is compared with the recorded area. Parcels beyond the **admin-set tolerance** (*Settings → Area mismatch tolerance*, default 5%) are flagged with a dashed outline and counted. Because the flag is evaluated at read time, changing the tolerance takes effect immediately.
+- **Integrations by adapter:** `LandRecordsAdapter` (DILRMP / state Bhulekh) and `CadastralAdapter` (Bhunaksha) are interfaces. The prototype ships deterministic mocks: the same survey number always yields the same synthetic owners, area and polygon. They simulate missing records (`0`) and outages (`999…` → 502). Officers import parcels by village and survey numbers (ranges like `41-48`). Partial results are reported per survey number and the import is recorded in case history.
+- **Parcels follow the case:** a transition moves every parcel forward to the status its new stage implies (e.g. a declaration marks proposed/notified parcels *declared*). The mapping is by workflow phase, so admin-configured workflows need no code. Disputed parcels are never moved automatically.
+
 ### Free-tier realities and how they are handled
 
 | Constraint | Handling |
@@ -102,6 +110,9 @@ apps/api/src
     admin/ audit/      role editing; append-only audit log
     workflow/          versioned workflow definitions, validation, activation
     cases/             case model, transition engine, hash-chained history, inbox
+    parcels/ gis/      parcel model, import, status sync; drill-down aggregates and viewport queries
+    integrations/      adapter interfaces + deterministic mock land-records and cadastral services
+    settings/          admin-editable operational thresholds
     health/            liveness and readiness
   seed/                repeatable synthetic seed data
 apps/api/test          auth, scoping, access control, workflow validation, deadlines, case lifecycle

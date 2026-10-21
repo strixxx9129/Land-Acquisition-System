@@ -7,7 +7,7 @@ import { useAuth } from '../lib/auth';
 import type { CaseSummary } from '../lib/types';
 import { useText } from '../lib/useText';
 
-const ROADMAP = ['m2', 'm3', 'm4', 'm5'] as const;
+const ROADMAP = ['m3', 'm4', 'm5'] as const;
 
 export function HomePage() {
   const { t } = useTranslation();

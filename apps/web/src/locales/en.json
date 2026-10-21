@@ -14,7 +14,9 @@
     "users": "Users",
     "roles": "Roles & permissions",
     "workflows": "Workflows",
-    "main": "Main navigation"
+    "main": "Main navigation",
+    "map": "Map",
+    "settings": "Settings"
   },
   "common": {
     "signOut": "Sign out",
@@ -67,7 +69,6 @@
     "permissions": "What you can do",
     "permissionsHint": "Granted by your role. Administrators change these under Roles & permissions — no code change needed.",
     "roadmap": "Coming in the next milestones",
-    "m2": "Land parcels on an interactive map with drill-down",
     "m3": "Documents, compensation calculation and disbursement per beneficiary",
     "m4": "R&R, possession, milestones and the national dashboard",
     "m5": "Statutory deadline alerts and escalation"
@@ -204,11 +205,16 @@
     "siaReportDate": "SIA report date",
     "appraisalDate": "Appraisal date",
     "objectionsReceived": "Objections received",
-    "changedFields": "Changed"
+    "changedFields": "Changed",
+    "village": "Village",
+    "created": "Added",
+    "skipped": "Already present",
+    "failed": "Not added"
   },
   "event": {
     "CASE_CREATED": "Proposal created",
-    "PROPOSAL_UPDATED": "Proposal edited"
+    "PROPOSAL_UPDATED": "Proposal edited",
+    "PARCELS_IMPORTED": "Parcels added from land records"
   },
   "workflows": {
     "title": "Workflows",
@@ -217,7 +223,11 @@
     "allTypes": "all project types",
     "version": "Version {{version}}",
     "activatedOn": "activated {{date}}",
-    "status": { "DRAFT": "Draft", "ACTIVE": "Active", "RETIRED": "Retired" },
+    "status": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "RETIRED": "Retired"
+    },
     "editDraft": "Edit draft",
     "newVersion": "Create new version",
     "activate": "Activate",
@@ -280,5 +290,65 @@
     "generic": "Something went wrong.",
     "notFound": "Page not found",
     "back": "Go to home"
+  },
+  "map": {
+    "title": "Land acquisition map",
+    "breadcrumb": "Map level",
+    "india": "India",
+    "mismatchOnly": "Only area mismatches (> {{pct}}%)",
+    "cases": "Cases",
+    "parcels": "Parcels",
+    "area": "Parcel area",
+    "mismatches": "Area mismatches",
+    "legend": "Parcel status legend",
+    "mismatchLegend": "Recorded area ≠ map area",
+    "bubble": "{{cases}} cases · {{parcels}} parcels · {{area}} ha",
+    "mismatchCount_one": "{{count}} mismatch",
+    "mismatchCount_other": "{{count}} mismatches",
+    "zoomIn": "Zoom in to see individual parcels.",
+    "truncated": "Showing the first {{count}} parcels in view — zoom in for the rest.",
+    "showing_one": "{{count}} parcel in view.",
+    "showing_other": "{{count}} parcels in view.",
+    "clickHint": "Select a parcel on the map or in the table to see its owners and area check.",
+    "empty": "Nothing to show at this level.",
+    "dataNote": "Map data © OpenStreetMap contributors. Parcel boundaries and owners are synthetic.",
+    "list": {
+      "national": "States",
+      "state": "Districts",
+      "district": "Projects"
+    }
+  },
+  "parcels": {
+    "heading": "Land parcels",
+    "parcel": "Parcel",
+    "title": "Survey {{survey}}, {{village}}",
+    "ulpin": "ULPIN",
+    "landType": "Land type",
+    "recorded": "Recorded (ha)",
+    "measured": "On map (ha)",
+    "status": "Status",
+    "survey": "Village · survey no.",
+    "owners": "Owners (record of rights)",
+    "mismatch": "Area mismatch: {{pct}}% off the record",
+    "areaOk": "Area matches the record ({{pct}}%)",
+    "source": "Source: {{system}}",
+    "summary_one": "{{count}} parcel · recorded {{recorded}} ha · on map {{measured}} ha.",
+    "summary_other": "{{count}} parcels · recorded {{recorded}} ha · on map {{measured}} ha.",
+    "mismatchCount_one": "{{count}} differs from the record by more than {{pct}}%.",
+    "mismatchCount_other": "{{count}} differ from the record by more than {{pct}}%.",
+    "importTitle": "Add parcels from land records",
+    "importHint": "Fetches owners, area and land type from the land-records service and boundaries from the cadastral map (mock adapters in this prototype). Ranges like 41-48 are allowed.",
+    "village": "Village",
+    "surveyNumbers": "Survey numbers",
+    "import": "Fetch & add",
+    "importing": "Fetching…",
+    "importResult": "{{created}} added, {{skipped}} already present, {{failed}} not added.",
+    "importMismatches_one": "{{count}} new parcel has an area mismatch.",
+    "importMismatches_other": "{{count}} new parcels have an area mismatch.",
+    "knownVillages": "Villages in this district: {{list}}"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Operational thresholds. Changes apply within a minute and are recorded in the audit log."
   }
 }

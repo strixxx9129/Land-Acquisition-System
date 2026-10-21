@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { ZodError } from 'zod';
 import { AppError } from '../lib/errors.js';
 import { ScopeError } from '../modules/access/context.js';
+import { IntegrationError } from '../modules/integrations/types.js';
 import { logger } from '../logger.js';
 
 export const notFoundHandler: RequestHandler = (req, res) => {
@@ -22,6 +23,10 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     // Logged loudly: this means a code path tried to read or write outside the user's jurisdiction.
     logger.warn({ requestId, err: err.message }, 'jurisdiction scope violation');
     return send(403, 'OUT_OF_SCOPE', 'This record is outside your jurisdiction');
+  }
+  if (err instanceof IntegrationError) {
+    logger.warn({ requestId, source: err.source, err: err.message }, 'integration failure');
+    return send(502, 'INTEGRATION_FAILED', `${err.source}: ${err.message}`);
   }
   if (err instanceof mongoose.Error.CastError) return send(400, 'BAD_REQUEST', `Invalid value for ${err.path}`);
   if (err instanceof mongoose.Error.ValidationError) {

@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import { PROJECT_TYPES, PUBLIC_PURPOSES } from '@lams/shared';
 import { ActionDialog } from '../components/ActionDialog';
 import { Badge, DeadlineBadge, SlaBadge, StatusBadge } from '../components/Badges';
+import { CaseParcels } from '../components/CaseParcels';
 import { Dialog } from '../components/Dialog';
 import { ErrorNotice, Loading } from '../components/ErrorNotice';
 import { api, ApiError } from '../lib/api';
@@ -186,6 +187,8 @@ export function CaseDetailPage() {
               </>
             )}
           </section>
+
+          <CaseParcels caseId={c.id} villages={c.proposal.villages} active={c.status === 'ACTIVE'} />
 
           <section aria-labelledby="history" className="rounded-lg border border-line bg-surface p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">

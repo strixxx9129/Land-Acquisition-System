@@ -12,6 +12,9 @@ import { invalidateMasterLabels } from '../modules/masters/labels.service.js';
 import { Organization } from '../modules/masters/organization.model.js';
 import { User } from '../modules/users/user.model.js';
 import { WorkflowDefinition } from '../modules/workflow/workflowDefinition.model.js';
+import { Parcel } from '../modules/parcels/parcel.model.js';
+import { invalidateSettings, Setting, SETTINGS, type SettingKey } from '../modules/settings/settings.js';
+import { villageSeeds } from './data/villages.js';
 import { seedCases } from './cases.js';
 import { jurisdictionSeeds } from './data/jurisdictions.js';
 import { organizationSeeds } from './data/organizations.js';
@@ -43,7 +46,15 @@ function upsertUsers(users: DemoUserSeed[], passwordHash: string, isDemo: boolea
  */
 export async function seedAll(): Promise<void> {
   await runAsSystem('seed', async () => {
-    await Promise.all([Role, User, Jurisdiction, Organization, WorkflowDefinition, Case, CaseEvent].map((m) => m.syncIndexes()));
+    await Promise.all([Role, User, Jurisdiction, Organization, WorkflowDefinition, Case, CaseEvent, Parcel, Setting].map((m) => m.syncIndexes()));
+
+    // Defaults only: values an admin has changed are left alone.
+    await Setting.bulkWrite(
+      (Object.keys(SETTINGS) as SettingKey[]).map((key) => ({
+        updateOne: { filter: { key }, update: { $setOnInsert: { key, value: SETTINGS[key].fallback } }, upsert: true },
+      })),
+    );
+    invalidateSettings();
 
     await Role.bulkWrite(
       roleSeeds.map((r) => ({
@@ -56,6 +67,33 @@ export async function seedAll(): Promise<void> {
       jurisdictionSeeds.map(({ centroid, ...j }) => ({
         updateOne: { filter: { code: j.code }, update: { $set: { ...j, centroid: { type: 'Point', coordinates: centroid } } }, upsert: true },
       })),
+    );
+    const stateOf = new Map(jurisdictionSeeds.filter((j) => j.level === 'DISTRICT').map((d) => [d.code, d.stateCode]));
+    const villageCounter = new Map<string, number>();
+    await Jurisdiction.bulkWrite(
+      villageSeeds.map((v) => {
+        const n = (villageCounter.get(v.districtCode) ?? 0) + 1;
+        villageCounter.set(v.districtCode, n);
+        const code = `${v.districtCode}${String(n).padStart(3, '0')}`;
+        return {
+          updateOne: {
+            filter: { code },
+            update: {
+              $set: {
+                code,
+                level: 'VILLAGE',
+                name: { en: v.en, hi: v.hi },
+                parentCode: v.districtCode,
+                stateCode: stateOf.get(v.districtCode)!,
+                districtCode: v.districtCode,
+                centroid: { type: 'Point', coordinates: v.at },
+                syntheticCode: true,
+              },
+            },
+            upsert: true,
+          },
+        };
+      }),
     );
     await Organization.bulkWrite(organizationSeeds.map((o) => ({ updateOne: { filter: { code: o.code }, update: { $set: o }, upsert: true } })));
     invalidateMasterLabels();
